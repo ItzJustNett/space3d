@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmos - 3D Deep Space Observatory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000000;
+            color: #ffffff;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+            perspective: 1000px;
+            overflow-x: hidden;
+        }
+
+        /* 3D Starfield with multiple depth layers */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: #000000;
+            transform-style: preserve-3d;
+        }
+
+        /* Distant background stars */
+        .stars-far {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: -25%;
+            left: -25%;
+            background-image: 
+                radial-gradient(circle at 15% 25%, rgba(255,240,230,0.3) 0.3px, transparent 0.4px),
+                radial-gradient(circle at 85% 15%, rgba(255,245,235,0.2) 0.2px, transparent 0.3px),
+                radial-gradient(circle at 45% 75%, rgba(255,250,240,0.25) 0.25px, transparent 0.35px),
+                radial-gradient(circle at 75% 35%, rgba(255,255,255,0.15) 0.15px, transparent 0.25px);
+            background-repeat: repeat;
+            background-size: 400px 300px;
+            transform: translateZ(-800px) scale(3);
+            animation: rotate-stars-far 300s linear infinite;
+        }
+
+        /* Medium distance stars */
+        .stars-mid {
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            top: -10%;
+            left: -10%;
+            background-image: 
+                radial-gradient(circle at 25% 45%, rgba(255,255,255,0.6) 0.5px, transparent 0.7px),
+                radial-gradient(circle at 75% 25%, rgba(255,255,255,0.5) 0.4px, transparent 0.6px),
+                radial-gradient(circle at 35% 85%, rgba(255,255,255,0.4) 0.3px, transparent 0.5px),
+                radial-gradient(circle at 85% 65%, rgba(255,255,255,0.45) 0.35px, transparent 0.55px);
+            background-repeat: repeat;
+            background-size: 300px 250px;
+            transform: translateZ(-400px) scale(2);
+            animation: rotate-stars-mid 200s linear infinite;
+        }
+
+        /* Near stars */
+        .stars-near {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 15% 25%, rgba(255,240,230,1) 0.8px, transparent 1px),
+                radial-gradient(circle at 85% 15%, rgba(255,245,235,1) 1px, transparent 1.2px),
+                radial-gradient(circle at 25% 75%, rgba(255,250,240,1) 0.9px, transparent 1.1px),
+                radial-gradient(circle at 65% 45%, rgba(255,255,255,0.8) 0.6px, transparent 0.8px);
+            background-repeat: no-repeat;
+            transform: translateZ(-100px) scale(1.2);
+            animation: stars-twinkle 4s ease-in-out infinite alternate;
+        }
+
+        /* 3D Milky Way with depth */
+        .milky-way {
+            position: absolute;
+            width: 200%;
+            height: 60%;
+            top: 20%;
+            left: -50%;
+            background: linear-gradient(
+                45deg,
+                transparent 0%,
+                rgba(200,180,150,0.01) 10%,
+                rgba(255,240,200,0.03) 30%,
+                rgba(255,230,180,0.05) 50%,
+                rgba(200,180,150,0.03) 70%,
+                transparent 90%
+            );
+            transform: translateZ(-600px) rotateX(15deg) rotateZ(-15deg) scale(2.5);
+            opacity: 0.4;
+            animation: milky-way-drift 400s linear infinite;
+        }
+
+        /* 3D Nebula clouds */
+        .nebula {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(2px);
+            animation: nebula-float 20s ease-in-out infinite;
+        }
+
+        .nebula1 {
+            width: 120px;
+            height: 80px;
+            background: radial-gradient(ellipse, rgba(255,100,100,0.1), transparent);
+            top: 20%;
+            right: 15%;
+            transform: translateZ(-300px);
+            animation-delay: -5s;
+        }
+
+        .nebula2 {
+            width: 80px;
+            height: 60px;
+            background: radial-gradient(ellipse, rgba(100,150,255,0.08), transparent);
+            bottom: 30%;
+            left: 20%;
+            transform: translateZ(-500px);
+            animation-delay: -12s;
+        }
+
+        .nebula3 {
+            width: 100px;
+            height: 70px;
+            background: radial-gradient(ellipse, rgba(100,255,150,0.06), transparent);
+            top: 60%;
+            right: 30%;
+            transform: translateZ(-700px);
+            animation-delay: -8s;
+        }
+
+        /* 3D Animations */
+        @keyframes rotate-stars-far {
+            from { transform: translateZ(-800px) scale(3) rotateZ(0deg); }
+            to { transform: translateZ(-800px) scale(3) rotateZ(360deg); }
+        }
+
+        @keyframes rotate-stars-mid {
+            from { transform: translateZ(-400px) scale(2) rotateZ(0deg); }
+            to { transform: translateZ(-400px) scale(2) rotateZ(360deg); }
+        }
+
+        @keyframes stars-twinkle {
+            0% { opacity: 0.7; transform: translateZ(-100px) scale(1.2); }
+            100% { opacity: 1; transform: translateZ(-100px) scale(1.2) rotateZ(1deg); }
+        }
+
+        @keyframes milky-way-drift {
+            from { transform: translateZ(-600px) rotateX(15deg) rotateZ(-15deg) scale(2.5) translateX(0px); }
+            to { transform: translateZ(-600px) rotateX(15deg) rotateZ(-15deg) scale(2.5) translateX(-100px); }
+        }
+
+        @keyframes nebula-float {
+            0%, 100% { transform: translateZ(-300px) translateY(0px) rotateZ(0deg); }
+            33% { transform: translateZ(-350px) translateY(-15px) rotateZ(120deg); }
+            66% { transform: translateZ(-250px) translateY(10px) rotateZ(240deg); }
+        }
+
+        /* 3D Header with depth */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.95);
+            border-bottom: 1px solid #333;
+            z-index: 1000;
+            font-size: 12px;
+            transform: translateZ(50px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 16px;
+            color: #00ff00;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0,255,0,0.5);
+            animation: logo-glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes logo-glow {
+            0% { text-shadow: 0 0 10px rgba(0,255,0,0.5); }
+            100% { text-shadow: 0 0 20px rgba(0,255,0,0.8), 0 0 30px rgba(0,255,0,0.3); }
+        }
+
+        .coordinates {
+            color: #888;
+            font-size: 10px;
+            transform: perspective(200px) rotateX(5deg);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            transform: perspective(100px) rotateY(0deg);
+        }
+
+        .nav-links a:hover {
+            color: #00ff00;
+            text-shadow: 0 0 5px rgba(0,255,0,0.8);
+            transform: perspective(100px) rotateY(5deg) translateZ(10px);
+        }
+
+        /* 3D Hero with floating elements */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0 50px;
+            background: transparent;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        /* 3D Floating data panels */
+        .floating-panel {
+            position: absolute;
+            background: rgba(0, 50, 0, 0.15);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            padding: 15px;
+            font-size: 9px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            transform-style: preserve-3d;
+            animation: float-panel 15s ease-in-out infinite;
+        }
+
+        .panel1 {
+            top: 15%;
+            right: 10%;
+            transform: translateZ(30px) rotateY(-10deg);
+            animation-delay: -2s;
+        }
+
+        .panel2 {
+            bottom: 20%;
+            right: 20%;
+            transform: translateZ(50px) rotateY(15deg);
+            animation-delay: -8s;
+        }
+
+        .panel3 {
+            top: 50%;
+            right: 5%;
+            transform: translateZ(20px) rotateY(-5deg);
+            animation-delay: -5s;
+        }
+
+        @keyframes float-panel {
+            0%, 100% { transform: translateZ(30px) rotateY(-10deg) translateY(0px); }
+            33% { transform: translateZ(50px) rotateY(-5deg) translateY(-10px); }
+            66% { transform: translateZ(40px) rotateY(-15deg) translateY(5px); }
+        }
+
+        .observation-data {
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            font-size: 11px;
+            margin-bottom: 30px;
+            line-height: 1.3;
+            transform: perspective(300px) rotateX(2deg) translateZ(20px);
+            text-shadow: 0 0 5px rgba(0,255,0,0.3);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: normal;
+            margin-bottom: 20px;
+            color: #ffffff;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+            transform: perspective(500px) rotateX(-5deg) translateZ(40px);
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+            animation: title-float 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes title-float {
+            0% { transform: perspective(500px) rotateX(-5deg) translateZ(40px) translateY(0px); }
+            100% { transform: perspective(500px) rotateX(-3deg) translateZ(45px) translateY(-5px); }
+        }
+
+        .hero-description {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 40px;
+            max-width: 600px;
+            line-height: 1.6;
+            transform: perspective(400px) rotateX(3deg) translateZ(25px);
+        }
+
+        /* 3D Observatory controls */
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+            transform: perspective(300px) rotateX(10deg) translateZ(30px);
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            text-decoration: none;
+            border: 1px solid #00ff00;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+            transform: perspective(200px) rotateY(0deg);
+        }
+
+        .control-btn:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+            transform: perspective(200px) rotateY(-5deg) translateZ(15px);
+        }
+
+        /* 3D Sections with depth */
+        .section {
+            padding: 80px 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+            border-top: 1px solid #222;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 50px;
+            transform: perspective(400px) rotateX(5deg) translateZ(20px);
+        }
+
+        .section h2 {
+            font-size: 24px;
+            font-weight: normal;
+            color: #ffffff;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        .section-meta {
+            color: #666;
+            font-size: 10px;
+            text-transform: uppercase;
+            transform: perspective(200px) rotateY(-10deg);
+        }
+
+        /* 3D Data grids */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+            transform-style: preserve-3d;
+        }
+
+        .data-entry {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #333;
+            padding: 30px;
+            transition: all 0.3s ease;
+            transform: perspective(600px) rotateX(0deg) rotateY(0deg) translateZ(0px);
+            transform-style: preserve-3d;
+        }
+
+        .data-entry:hover {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.05);
+            transform: perspective(600px) rotateX(-2deg) rotateY(3deg) translateZ(20px);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.1);
+        }
+
+        .data-entry:nth-child(odd) {
+            animation: float-left 12s ease-in-out infinite;
+        }
+
+        .data-entry:nth-child(even) {
+            animation: float-right 12s ease-in-out infinite;
+            animation-delay: -6s;
+        }
+
+        @keyframes float-left {
+            0%, 100% { transform: perspective(600px) rotateY(0deg) translateZ(0px); }
+            50% { transform: perspective(600px) rotateY(1deg) translateZ(5px); }
+        }
+
+        @keyframes float-right {
+            0%, 100% { transform: perspective(600px) rotateY(0deg) translateZ(0px); }
+            50% { transform: perspective(600px) rotateY(-1deg) translateZ(5px); }
+        }
+
+        .object-designation {
+            color: #00ff00;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px rgba(0,255,0,0.5);
+            transform: translateZ(5px);
+        }
+
+        .object-name {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: normal;
+            transform: translateZ(3px);
+        }
+
+        .object-data {
+            color: #999;
+            font-size: 11px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            transform: translateZ(2px);
+        }
+
+        .object-description {
+            color: #ccc;
+            font-size: 13px;
+            line-height: 1.5;
+            transform: translateZ(1px);
+        }
+
+        /* 3D Measurements section */
+        .measurements {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            padding: 40px;
+            margin: 60px 0;
+            transform: perspective(800px) rotateX(5deg) translateZ(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .measurements h3 {
+            color: #00ff00;
+            font-size: 14px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px rgba(0,255,0,0.5);
+        }
+
+        .measurement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            transform-style: preserve-3d;
+        }
+
+        .measurement-item {
+            border-left: 2px solid #444;
+            padding-left: 20px;
+            transform: perspective(400px) rotateY(0deg);
+            transition: transform 0.3s ease;
+        }
+
+        .measurement-item:hover {
+            transform: perspective(400px) rotateY(5deg) translateZ(10px);
+            border-left-color: #00ff00;
+        }
+
+        .measurement-value {
+            font-size: 20px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.3);
+        }
+
+        .measurement-unit {
+            color: #888;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .measurement-desc {
+            color: #aaa;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        /* 3D Mission data */
+        .mission-data {
+            background: rgba(0, 50, 0, 0.1);
+            border: 1px solid #004400;
+            padding: 30px;
+            margin: 40px 0;
+            transform: perspective(600px) rotateX(3deg) translateZ(15px);
+            transition: transform 0.3s ease;
+        }
+
+        .mission-data:hover {
+            transform: perspective(600px) rotateX(1deg) translateZ(25px);
+            box-shadow: 0 15px 30px rgba(0,100,0,0.1);
+        }
+
+        .mission-header {
+            color: #00aa00;
+            font-size: 12px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px rgba(0,170,0,0.5);
+        }
+
+        .mission-content {
+            color: #ccc;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* 3D Footer */
+        footer {
+            padding: 40px 50px;
+            color: #666;
+            font-size: 10px;
+            border-top: 1px solid #222;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            transform: perspective(400px) rotateX(5deg) translateZ(5px);
+        }
+
+        /* Parallax scrolling effect */
+        .parallax-element {
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 0 20px;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+                letter-spacing: 4px;
+            }
+            
+            .section {
+                padding: 60px 20px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .data-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .floating-panel {
+                display: none;
+            }
+        }
+
+        /* Terminal-style cursor */
+        .terminal-cursor {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="starfield">
+        <div class="stars-far"></div>
+        <div class="stars-mid"></div>
+        <div class="stars-near"></div>
+        <div class="milky-way"></div>
+        <div class="nebula nebula1"></div>
+        <div class="nebula nebula2"></div>
+        <div class="nebula nebula3"></div>
+    </div>
+
+    <header>
+        <nav>
+            <div class="logo">DEEP SPACE OBS</div>
+            <div class="coordinates">
+                RA: 19h 25m 27.9s | DEC: +40° 15' 27" | ALT: 2,115m
+            </div>
+            <ul class="nav-links">
+                <li><a href="#observations">Observations</a></li>
+                <li><a href="#catalog">Catalog</a></li>
+                <li><a href="#missions">Missions</a></li>
+                <li><a href="#data">Data</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <!-- Floating 3D data panels -->
+        <div class="floating-panel panel1">
+            TRACKING: NGC 4472<br>
+            DIST: 55.7 Mly<br>
+            VEL: +981 km/s
+        </div>
+        <div class="floating-panel panel2">
+            JWST STATUS: ACTIVE<br>
+            EXP: 4,800s<br>
+            FILTER: F200W
+        </div>
+        <div class="floating-panel panel3">
+            SEEING: 0.8"<br>
+            HUMIDITY: 12%<br>
+            WIND: 3.2 m/s
+        </div>
+
+        <div class="observation-data">
+            OBSERVATION SESSION: 2025.167<br>
+            TELESCOPE: 10.4m GRAN TELESCOPIO CANARIAS<br>
+            COORDINATES: 28°45'23.31"N 17°53'20.6"W<br>
+            SEEING: 0.8" | TRANSPARENCY: 85% | HUMIDITY: 12%<br>
+            TARGET: DEEP FIELD SURVEY SECTOR 7<span class="terminal-cursor">_</span>
+        </div>
+        
+        <h1>COSMOS</h1>
+        <p class="hero-description">
+            Real-time deep space observations from ground-based and orbital telescopes. 
+            Monitoring 47,000+ cataloged objects across the electromagnetic spectrum. 
+            Current field: Virgo Cluster at 54 million light-years distance.
+        </p>
+        
+        <div class="controls">
+            <a href="#observations" class="control-btn">Begin Survey</a>
+            <a href="#catalog" class="control-btn">Access Catalog</a>
+            <a href="#data" class="control-btn">Download Data</a>
+        </div>
+    </section>
+
+    <section id="observations" class="section">
+        <div class="section-header">
+            <h2>Current Observations</h2>
+            <div class="section-meta">Last updated: 2025-06-16 23:47:12 UTC</div>
+        </div>
+
+        <div class="mission-data">
+            <div class="mission-header">James Webb Space Telescope - NIRCam Deep Field</div>
+            <div class="mission-content">
+                Currently observing NGC 6302 (Bug Nebula) in the infrared spectrum. Exposure time: 4,800 seconds. 
+                Target distance: 3,800 light-years. Central star temperature: 36,000K. 
+                Detecting complex hydrocarbon molecules in the nebular gas.
+            </div>
+        </div>
+
+        <div class="data-grid">
+            <div class="data-entry parallax-element">
+                <div class="object-designation">M31 / NGC 224</div>
+                <div class="object-name">Andromeda Galaxy</div>
+                <div class="object-data">
+                    RA: 00h 42m 44.3s | DEC: +41° 16' 09"<br>
+                    Distance: 2.537 ± 0.1 Mly | Radial velocity: -301 km/s<br>
+                    Apparent magnitude: 3.44 | Angular size: 190' × 60'<br>
+                    Mass: 1.5 × 10¹² M☉ | Stars: ~1 trillion
+                </div>
+                <div class="object-description">
+                    Spiral galaxy approaching the Milky Way at 110 km/s. Collision predicted in 4.5 billion years. 
+                    Contains double nucleus with supermassive black holes of 1.4 × 10⁸ M☉.
+                </div>
+            </div>
+
+            <div class="data-entry parallax-element">
+                <div class="object-designation">Sgr A* / 2MASS J17454034-2903596</div>
+                <div class="object-name">Sagittarius A*</div>
+                <div class="object-data">
+                    RA: 17h 45m 40.0s | DEC: -29° 00' 28"<br>
+                    Distance: 26,673 ± 42 ly | Mass: 4.154 × 10⁶ M☉<br>
+                    Schwarzschild radius: 12.0 × 10⁶ km<br>
+                    X-ray luminosity: 2.4 × 10³³ erg/s
+                </div>
+                <div class="object-description">
+                    Supermassive black hole at the Galactic Center. Event Horizon Telescope resolved 
+                    the shadow in 2022. Orbital period of nearest star S2: 16.05 years.
+                </div>
+            </div>
+
+            <div class="data-entry parallax-element">
+                <div class="object-designation">TOI-715 b</div>
+                <div class="object-name">Super-Earth Exoplanet</div>
+                <div class="object-data">
+                    RA: 06h 37m 14.2s | DEC: -18° 43' 26"<br>
+                    Distance: 137.0 ± 1.2 ly | Host star: M dwarf<br>
+                    Orbital period: 19.28 days | Radius: 1.55 R⊕<br>
+                    Equilibrium temp: 287K | ESI: 0.85
+                </div>
+                <div class="object-description">
+                    Potentially habitable super-Earth in the conservative habitable zone. 
+                    Discovered by TESS in 2024. Possible water vapor in atmosphere detected by JWST.
+                </div>
+            </div>
+
+            <div class="data-entry parallax-element">
+                <div class="object-designation">PSR J0437-4715</div>
+                <div class="object-name">Millisecond Pulsar</div>
+                <div class="object-data">
+                    RA: 04h 37m 15.8s | DEC: -47° 15' 09"<br>
+                    Distance: 510.8 ± 0.9 ly | Period: 5.757 ms<br>
+                    Magnetic field: 5.8 × 10⁸ G | Spin-down age: 4.9 Gyr<br>
+                    Proper motion: 121.4 mas/yr
+                </div>
+                <div class="object-description">
+                    Nearest millisecond pulsar to Earth. Timing precision: 100 nanoseconds. 
+                    Used in pulsar timing arrays to detect gravitational waves.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="catalog" class="section">
+        <div class="section-header">
+            <h2>Messier Catalog</h2>
+            <div class="section-meta">110 nebulae and star clusters</div>
+        </div>
+
+        <div class="measurements">
+            <h3>Observable Universe Measurements</h3>
+            <div class="measurement-grid">
+                <div class="measurement-item">
+                    <div class="measurement-value">13.787 ± 0.020</div>
+                    <div class="measurement-unit">Billion Years</div>
+                    <div class="measurement-desc">Age of universe (Planck 2018)</div>
+                </div>
+                
+                <div class="measurement-item">
+                    <div class="measurement-value">67.66 ± 0.42</div>
+                    <div class="measurement-unit">km/s/Mpc</div>
+                    <div class="measurement-desc">Hubble constant (SH0ES 2023)</div>
+                </div>
+                
+                <div class="measurement-item">
+                    <div class="measurement-value">2.998 × 10⁸</div>
+                    <div class="measurement-unit">m/s</div>
+                    <div class="measurement-desc">Speed of light (exact)</div>
+                </div>
+                
+                <div class="measurement-item">
+                    <div class="measurement-value">46.5</div>
+                    <div class="measurement-unit">Billion Light-Years</div>
+                    <div class="measurement-desc">Comoving distance to CMB</div>
+                </div>
+
+                <div class="measurement-item">
+                    <div class="measurement-value">5,504</div>
+                    <div class="measurement-unit">Confirmed</div>
+                    <div class="measurement-desc">Exoplanets (as of June 2025)</div>
+                </div>
+                
+                <div class="measurement-item">
+                    <div class="measurement-value">2.725</div>
+                    <div class="measurement-unit">Kelvin</div>
+                    <div class="measurement-desc">CMB temperature</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mission-data">
+            <div class="mission-header">Gaia DR3 Stellar Survey</div>
+            <div class="mission-content">
+                Precision astrometry of 1.81 billion stars. Parallax measurements accurate to 10 microarcseconds. 
+                Radial velocities for 33.8 million stars. Discovering stellar streams and galaxy merger history.
+            </div>
+        </div>
+    </section>
+
+    <section id="missions" class="section">
+        <div class="section-header">
+            <h2>Active Missions</h2>
+            <div class="section-meta">17 operational deep space observatories</div>
+        </div>
+
+        <div class="data-grid">
+            <div class="data-entry parallax-element">
+                <div class="object-designation">JWST / L2 Halo Orbit</div>
+                <div class="object-name">James Webb Space Telescope</div>
+                <div class="object-data">
+                    Launch: 2021-12-25 | Orbit: Sun-Earth L2<br>
+                    Mirror diameter: 6.5m | Wavelength: 0.6-28.5 μm<br>
+                    Angular resolution: 0.1" at 2 μm<br>
+                    Operating temp: 50K | Mission duration: 10 years
+                </div>
+                <div class="object-description">
+                    Infrared space telescope observing first galaxies, exoplanet atmospheres, 
+                    and star formation regions. Currently detecting galaxies at redshift z > 13.
+                </div>
+            </div>
+
+            <div class="data-entry parallax-element">
+                <div class="object-designation">HST / LEO 547km</div>
+                <div class="object-name">Hubble Space Telescope</div>
+                <div class="object-data">
+                    Launch: 1990-04-24 | Orbit: Low Earth Orbit<br>
+                    Mirror diameter: 2.4m | Wavelength: 0.1-2.5 μm<br>
+                    Angular resolution: 0.05" | Orbital period: 95 min<br>
+                    Observations: 1.6M | Images: 1.5M+
+                </div>
+                <div class="object-description">
+                    Optical space telescope providing deep field observations for 35 years. 
+                    Key discoveries include dark energy, exoplanet atmospheres, and galaxy evolution.
+                </div>
+            </div>
+
+            <div class="data-entry parallax-element">
+                <div class="object-designation">EHT / Global VLBI Array</div>
+                <div class="object-name">Event Horizon Telescope</div>
+                <div class="object-data">
+                    Baseline: 10,000 km | Frequency: 230 GHz<br>
+                    Angular resolution: 20 μas | Stations: 11<br>
+                    Data rate: 32 Gbps | Storage: 1024 TB/night<br>
+                    Targets: Sgr A*, M87*, Centaurus A
+                </div>
+                <div class="object-description">
+                    Very long baseline interferometry network imaging black hole event horizons. 
+                    First direct image of a black hole shadow achieved in M87* (2019) and Sgr A* (2022).
+                </div>
+            </div>
+
+            <div class="data-entry parallax-element">
+                <div class="object-designation">LIGO-Virgo-KAGRA</div>
+                <div class="object-name">Gravitational Wave Network</div>
+                <div class="object-data">
+                    Arm length: 4km (LIGO) | Sensitivity: 10⁻²¹ m<br>
+                    Frequency range: 10-1000 Hz | Duty cycle: 70%<br>
+                    Detections: 90+ confirmed GW events<br>
+                    Range: 1 Gpc for BH mergers
+                </div>
+                <div class="object-description">
+                    Laser interferometry detecting spacetime ripples from merging black holes and neutron stars. 
+                    O4 observing run detecting 1 event per week. Next generation upgrades planned for 2030s.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>DEEP SPACE OBSERVATORY NETWORK | REAL-TIME ASTRONOMICAL DATA | EST. 2025</p>
+        <p>DATA SOURCES: NASA/ESA/NRAO/LIGO/VIRGO/NSF | COORDINATES: J2000.0 EPOCH</p>
+    </footer>
+
+    <script>
+        // 3D Parallax effect on scroll
+        function updateParallax() {
+            const scrollTop = window.pageYOffset;
+            const windowHeight = window.innerHeight;
+            
+            // Update star layers with different speeds
+            const starsFar = document.querySelector('.stars-far');
+            const starsMid = document.querySelector('.stars-mid');
+            const starsNear = document.querySelector('.stars-near');
+            const milkyWay = document.querySelector('.milky-way');
+            
+            if (starsFar) starsFar.style.transform = `translateZ(-800px) scale(3) translateY(${scrollTop * 0.1}px)`;
+            if (starsMid) starsMid.style.transform = `translateZ(-400px) scale(2) translateY(${scrollTop * 0.3}px)`;
+            if (starsNear) starsNear.style.transform = `translateZ(-100px) scale(1.2) translateY(${scrollTop * 0.5}px)`;
+            if (milkyWay) milkyWay.style.transform = `translateZ(-600px) rotateX(15deg) rotateZ(-15deg) scale(2.5) translateY(${scrollTop * 0.2}px)`;
+            
+            // Parallax effect for data entries
+            const parallaxElements = document.querySelectorAll('.parallax-element');
+            parallaxElements.forEach((element, index) => {
+                const rect = element.getBoundingClientRect();
+                const elementTop = rect.top + scrollTop;
+                const elementHeight = rect.height;
+                const speed = 0.5 + (index * 0.1); // Different speeds for each element
+                
+                if (rect.top < windowHeight && rect.bottom > 0) {
+                    const yPos = -(scrollTop - elementTop) * speed * 0.1;
+                    const rotateY = Math.sin(scrollTop * 0.001 + index) * 2;
+                    element.style.transform = `perspective(600px) translateY(${yPos}px) rotateY(${rotateY}deg) translateZ(${Math.abs(yPos) * 0.5}px)`;
+                }
+            });
+        }
+
+        // 3D mouse tracking effect
+        function track3D(event) {
+            const hero = document.querySelector('.hero');
+            const rect = hero.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = (y - centerY) / centerY * 5;
+            const rotateY = (x - centerX) / centerX * 5;
+            
+            hero.style.transform = `perspective(1000px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`;
+            
+            // Update floating panels
+            const panels = document.querySelectorAll('.floating-panel');
+            panels.forEach((panel, index) => {
+                const panelRotateX = rotateX * (0.5 + index * 0.2);
+                const panelRotateY = rotateY * (0.3 + index * 0.1);
+                panel.style.transform += ` rotateX(${panelRotateX}deg) rotateY(${panelRotateY}deg)`;
+            });
+        }
+
+        // Update timestamps every minute
+        function updateTimestamp() {
+            const now = new Date();
+            const utc = now.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+            const elements = document.querySelectorAll('.section-meta');
+            elements.forEach(el => {
+                if (el.textContent.includes('Last updated:')) {
+                    el.textContent = `Last updated: ${utc}`;
+                }
+            });
+        }
+
+        // Event listeners
+        window.addEventListener('scroll', updateParallax);
+        document.addEventListener('mousemove', track3D);
+        setInterval(updateTimestamp, 60000);
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Header visibility with 3D effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            const scrolled = window.pageYOffset;
+            
+            if (scrolled > 50) {
+                header.style.background = 'rgba(0, 0, 0, 0.98)';
+                header.style.transform = 'translateZ(50px) rotateX(0deg)';
+            } else {
+                header.style.background = 'rgba(0, 0, 0, 0.95)';
+                header.style.transform = 'translateZ(50px) rotateX(2deg)';
+            }
+        });
+
+        // Initialize 3D interactions
+        document.querySelectorAll('.data-entry').forEach(entry => {
+            entry.addEventListener('mouseenter', function() {
+                this.style.borderColor = '#00ff00';
+                this.style.backgroundColor = 'rgba(0, 255, 0, 0.05)';
+            });
+            
+            entry.addEventListener('mouseleave', function() {
+                this.style.borderColor = '#333';
+                this.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+            });
+        });
+
+        // Initial parallax setup
+        updateParallax();
+    </script>
+</body>
+</html>
